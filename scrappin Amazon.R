@@ -23,9 +23,10 @@ pag<-str_replace(pag, "sr_pg_2", paste0("sr_pg_",lista_paginas))
 pag
 
 
-t
+#completing link
 paginas<-paste0("https://www.amazon.es/", pag)
 
+#Function to get product links
 dameLinksPagina<-function(url){
   selector<-"div > div:nth-child(1) > div > div > div:nth-child(1) > h2 > a"
   pagina<-read_html(url)
@@ -35,14 +36,33 @@ dameLinksPagina<-function(url){
   nodo_links
   
 }
+
+#Get page 3
 test<-dameLinksPagina(paginas[3])
+
+#Una vez tenemos lista la función simplemente usamos la función 
+#   sapply para ejecutar la función a cada elemento de nuestro vector de urls de búsqueda.
 linksAsp<-sapply(paginas, dameLinksPagina)
+
+#Transform in a vector
 vlink<-as.vector(linksAsp)
 
+#Add sub URL
 vlinkAspiradora<-paste0("https://www.amazon.es/", vlink)
 vlinkAspiradora
 
+#for to links
+count<-1
+vlinkAspiradora<-character() 
+for (link in vlink){
+  link
+  vlinkAspiradora[count]<-paste0("https://www.amazon.es/", link)
+  vlinkAspiradora[count]
+  count <- count+1
+}
 
+
+#From Vacuum cleaner
 url<-"https://www.amazon.es/Cecotec-Conga-Duostick-Easy-Aspirador/dp/B01LYTA8KW/ref=sr_1_5?__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&keywords=aspirador&qid=1558782933&s=gateway&sr=8-5"
 nombre<-"#productTitle"
 pagina_web<-read_html(url)
@@ -65,6 +85,8 @@ tabla_nodo<-html_node(pagina_web, tabla)
 tabla_tab<-html_table(tabla_nodo)
 tabla_tab
 class(tabla_tab)
+
+#Join values
 val<-tabla_tab$X2
 val
 res_tabla<-data.frame(t(val))
@@ -75,9 +97,10 @@ colnames(res_tabla)<-tabla_name
 res_tabla
 str(res_tabla)
 
+#Vector
 resultado_aspiradoras<-c(nombre_texto, precio_texto, opiniones_texto, as.character(res_tabla$`Peso del producto`), as.character(res_tabla$Potencia), as.character(res_tabla$`Dimensiones del producto`), as.character(res_tabla$Volumen))
 
-
+#Function
 getArticulo<-function(url){
   pagina_web<-read_html(url)
   nombre_nodo<-html_node(pagina_web, nombre)
@@ -136,23 +159,31 @@ getArticulo<-function(url){
   articulo
   
 }
+
+#Get data
+res<-getArticulo(vlinkAspiradora[1])
+resultado_datos<-sapply(vlink,getArticulo)
+res<-t(resultado_datos)
+
+
 #Probamos para uno
-url<-vlinkAsp[1]
+url<-vlinkAspiradora[1]
 getArticulo(url)
-res<-sapply(vlinkAsp,getArticulo)
+res<-sapply(vlinkAspiradora,getArticulo)
 resultado<-as.data.frame(t(res))
 #"Nombre","Peso del producto", "Dimensiones del producto", "Volumen", "Potencia", "Opiniones", "Precio"
 colnames(resultado)<-c("Nombre","Peso del producto", "Dimensiones del producto", "Volumen", "Potencia", "Opiniones", "Precio")
-rownames(resultado)<-c(1:200)
+rownames(resultado)<-c(1:length(vlinkAspiradora))
 
 #Obtenemos toda la caracterizacion de los articulos
-res<-sapply(vlinkAsp,getArticulo)
+res<-sapply(vlinkAspiradora,getArticulo)
 #Generamos un dataframe con esa info
-a<-do.call("rbind", res)
-aspiradoras<-as.data.frame(a)
+res<-t(res)
+#a<-do.call("rbind", res)
+aspiradoras<-as.data.frame(res)
 colnames(aspiradoras)<-c("nombre", "peso" , "dimensiones", "volumen","potencia", "opiniones", "precio")  
-rownames(aspiradoras)<-c(1:200)
-write.csv(aspiradoras, "/home/ines/platzi/dataAmazon2.csv")
+rownames(aspiradoras)<-c(1:length(vlinkAspiradora))
+write.csv(aspiradoras, "dataAmazon2.csv")
 
 
 
