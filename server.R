@@ -1,6 +1,7 @@
 function(input, output, session) {
-  data<-read.csv("/tmp/data.csv")
+  data<-read.csv("C:/Users/Usuario/Desktop/Platzi/Profesional de Ciencia de Datos/dataAmazon2.csv")
   data<-data[,-1]
+  
   # Combine the selected variables into a new data frame
   selectedData <- reactive({
     data[, c(input$xcol, input$ycol)]
